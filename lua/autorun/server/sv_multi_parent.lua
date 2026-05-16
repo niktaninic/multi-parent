@@ -17,7 +17,9 @@ function duplicator.GetAllConstrainedEntitiesAndConstraints( ent, entTable, cons
 	local entValid = IsValid( ent )
 	if entValid and entTable[ent:EntIndex()] then return end
 
-	entTable, constraintTable = duplicator.OriginalGetAllConstrainedEntitiesAndConstraints( ent, entTable, constraintTable ) or entTable, constraintTable
+	local t1, t2 = duplicator.OriginalGetAllConstrainedEntitiesAndConstraints( ent, entTable, constraintTable )
+	entTable = t1 or entTable
+	constraintTable = t2 or constraintTable
 
 	if not entValid and not ent:IsWorld() then return end
 
@@ -53,7 +55,9 @@ function duplicator.CopyEntTable( ent )
 	local parent = ent:GetParent()
 
 	if IsValid( parent ) then
-		if not output.BuildDupeInfo or isfunction( output.BuildDupeInfo ) then
+		if isfunction( output.BuildDupeInfo ) then
+			output.BuildDupeInfo = output.BuildDupeInfo( ent ) or {}
+		elseif not output.BuildDupeInfo then
 			output.BuildDupeInfo = {}
 		end
 

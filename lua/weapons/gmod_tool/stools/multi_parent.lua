@@ -21,7 +21,7 @@ TOOL.ClientConVar[ "disableshadow" ] = "0"
 -- Language strings copied here to avoid having to send the file to clients
 -- TODO: Remove this section and only use localization files if this ever gets uploaded to the Workshop
 if CLIENT then
-	language.Add("tool.multi_parent.name", "Multi-Parent")
+	language.Add("tool.multi_parent.name", "Multi Parent/Unparent")
 	language.Add("tool.multi_parent.desc", "Parent multiple props to one prop.")
 
 	language.Add("tool.multi_parent.left", "Select a prop (Shift to select all, Use to area select)")
@@ -45,8 +45,8 @@ if CLIENT then
 	language.Add("tool.multi_parent.weight.help", "Checking this will set the entity's weight to 0.1 before parenting. Useful for props that are purely for visual effect.")
 	language.Add("tool.multi_parent.disableshadow.help", "Disables shadows for parented entities.")
 
-	language.Add("Undone_Multi-Parent", "Undone Multi-Parent")
-	language.Add("tool.multi_parent.notify", "Multi-Parent: %s entities were selected.")
+	language.Add("Undone_Multi-Parent", "Undone Multi Parent/Unparent")
+	language.Add("tool.multi_parent.notify", "Multi Parent/Unparent: %s entities were selected.")
 end
 
 function TOOL.BuildCPanel( panel )
@@ -90,6 +90,11 @@ function TOOL.BuildCPanel( panel )
 end
 
 TOOL.entTbl = {}
+
+function TOOL:Deploy()
+	self.entTbl = {}
+	return true
+end
 
 function TOOL:IsPropOwner( ply, ent )
 	if CPPI then
@@ -226,16 +231,20 @@ local function unparentTargets( entTbl )
 					prop:SetMaterial( mat )
 					prop:SetAngles( ang )
 					prop:SetPos( pos )
+					phys:EnableMotion( true )
 				end
 
 				-- Deselect ent
 				prop:SetColor( v )
 				entTbl[k] = nil
+			else
+				prop:SetColor( v )
+				entTbl[k] = nil
 			end
+		else
+			entTbl[k] = nil
 		end
 	end
-
-	entTbl = {}
 end
 
 function TOOL:RightClick( trace )
@@ -246,6 +255,7 @@ function TOOL:RightClick( trace )
 	-- Unparenting mode behavior
 	if self:GetStage() == 1 then
 		unparentTargets( entTbl )
+		self.entTbl = {}
 
 		return true
 	end
@@ -347,6 +357,7 @@ function TOOL:RightClick( trace )
 					prop:SetMaterial( mat )
 					prop:SetAngles( ang )
 					prop:SetPos( pos )
+					phys:EnableMotion( true )
 
 					if data.Mass then
 						phys:SetMass( data.Mass )
